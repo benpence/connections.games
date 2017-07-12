@@ -8,29 +8,55 @@
 }
 
 .square-blank {
+  color:            #000;
   background-color: #eee;
 }
 
 .square-blank:hover {
   background-color: #ccc;
+
+  cursor: pointer;
 }
 
 .square-red {
-  background-color: #faa;
+  color:            #fff;
+  background-color: #e55;
+}
+
+.square-red-unguessed {
+  color:            #f00;
+  background-color: #eee;
 }
 
 .square-blue {
-  background-color: #aaf;
+  color:            #fff;
+  background-color: #55e;
+}
+
+.square-blue-unguessed {
+  color:            #00f;
+  background-color: #eee;
 }
 
 .square-grey {
-  background-color: #ccc;
+  background-color: #eec;
+}
+
+.square-grey-unguessed {
+  color:            #000;
+  background-color: #eee;
 }
 
 .square-assassin {
+  color:            #fff;
   background-color: #111;
-  color: #fff;
 }
+
+.square-assassin-unguessed {
+  color:            #111;
+  background-color: #ccc;
+}
+
 
 .score-red {
   color: #f00;
@@ -38,4 +64,8 @@
 
 .score-blue {
   color: #00f;
+}
+
+.score-status {
+  font-size: 40px;
 }

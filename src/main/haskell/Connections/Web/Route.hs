@@ -35,13 +35,13 @@ serveStaticDirectory staticRouteDirectory staticDirectory = do
         filePath <- Scotty.param "1"
 
         -- TODO: Is this vulnerable to directory traversal attacks? Doesn't seem
-        -- like it from trying, but I should look into this more
+        -- like it from testing, but I should look into this more
         Scotty.file ((Text.unpack staticDirectory) <> filePath)
 
 -- | Add routes for all the API calls
 --
 -- Each route returns JSON
---   On success: { results: { ... } }
+--   On success: { results: ... }
 --   On failure: { errors: ["..."] }
 apiRoutes :: Controller.AppConfig -> Store IO -> Scotty.ScottyM ()
 apiRoutes appConfig store = do
@@ -71,7 +71,7 @@ apiRoutes appConfig store = do
 
         Scotty.json apiResponse
 
-     -- | Generates a new game. Mutations will be visible in "/api/status".
+    -- | Generates a new game. Mutations will be visible in "/api/status".
     -- Returns `null` as a result.
     Scotty.get "/api/new_game" $ do
         key <- keyParam

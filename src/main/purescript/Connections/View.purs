@@ -10,6 +10,7 @@ module Connections.View
 import Connections.Api                           as Api
 import Connections.Game                          as Game
 import Data.Array                                as Array
+import Data.Foldable                             as Foldable
 import Data.Int                                  as Int
 import Data.Maybe                                as Maybe
 import Pux                                       as Pux
@@ -116,18 +117,16 @@ viewScore game@(Game { turn }) =
     status _               BlueTurn = "Blue turn"
   in
     H.div [A.className "score"] [
-        -- Display the score in form 'Red - Blue - Assassins'
-        H.div [A.className "score-numbers"] [
-            H.span [A.className "score-red" ]     [H.text (show (Game.redRemaining game))],
-            H.text " - ",
-            H.span [A.className "score-blue"]     [H.text (show (Game.blueRemaining game))],
-            H.text " - ",
-            H.span [A.className "score-assassin"] [H.text (show (Game.assassins game))]
-        ],
-
         -- Status message
         H.div [A.className "score-status"] [
             H.text (status (Game.winner game) turn)
+        ],
+
+        -- Display the score in form 'Red - Blue'
+        H.div [A.className "score-numbers"] [
+            H.span [A.className "score-red" ]     [H.text (show (Game.redRemaining game))],
+            H.text " - ",
+            H.span [A.className "score-blue"]     [H.text (show (Game.blueRemaining game))]
         ]
     ]
 
@@ -137,7 +136,7 @@ viewButtons isSpymaster gameStarted =
     -- Some buttons are only present during the game
     endTurnButton =
         if gameStarted
-        then [H.button [E.onClick (const EndTurn)] [H.text "End Turn"]]
+        then [H.button [A.className "btn", E.onClick (const EndTurn)] [H.text "End Turn"]]
         else []
 
     toggleText =
@@ -146,14 +145,14 @@ viewButtons isSpymaster gameStarted =
         else "Change to Spymaster"
     toggleSpymasterButton =
         H.div [] [
-            H.button [E.onClick (const ToggleSpymaster)] [
+            H.button [A.className "btn", E.onClick (const ToggleSpymaster)] [
                  H.text toggleText
             ]
         ]
   in
     H.div [A.className "buttons"] (
         endTurnButton <> [
-        H.button [E.onClick (const NewGame)] [H.text "New Game"],
+        H.button [A.className "btn", E.onClick (const NewGame)] [H.text "New Game"],
         toggleSpymasterButton
     ])
 
@@ -176,28 +175,34 @@ viewSquareRow isSpymaster isGameOver rowNum squares =
 
 -- | HTML for an individual square
 viewSquare :: Boolean -> Boolean -> Int -> Int -> Square -> Html Action
-viewSquare isSpymaster isGameOver rowNum colNum (Square square) =
+viewSquare isSpymaster isGameOver rowNum colNum (Square { guessed, squareType, word }) =
   let
     guess   = Guess (Tuple rowNum colNum)
 
     -- Spymaster cannot click squares
     onClick =
-        if isGameOver || square.guessed || isSpymaster
+        if isGameOver || guessed || isSpymaster
         then []
         else [E.onClick (const guess)]
 
-    colorClassName :: SquareType -> String
-    colorClassName _ | not isSpymaster && not square.guessed = "square-blank"
-    colorClassName Red                                       = "square-red"
-    colorClassName Blue                                      = "square-blue"
-    colorClassName Grey                                      = "square-grey"
-    colorClassName Assassin                                  = "square-assassin"
-
-    className = "col-xs-1 square " <> colorClassName square.squareType
+    classes   = ["col-xs-1", "square", colorClass squareType isSpymaster guessed]
+    className = Foldable.intercalate " " classes
   in
     H.div ([A.className className] <> onClick) [
-        H.text square.word
+        H.text word
     ]
+
+colorClass :: SquareType -> Boolean -> Boolean -> String
+colorClass squareType isSpymaster isGuessed = case squareType of
+    Red      | isGuessed   -> "square-red"
+             | isSpymaster -> "square-red-unguessed"
+    Blue     | isGuessed   -> "square-blue"
+             | isSpymaster -> "square-blue-unguessed"
+    Assassin | isGuessed   -> "square-assassin"
+             | isSpymaster -> "square-assassin-unguessed"
+    Grey     | isGuessed   -> "square-grey"
+             | isSpymaster -> "square-grey-unguessed"
+    _                      -> "square-blank"
 
 -- | A signal to refresh the status on a regular basis
 refreshEvery :: Int -> Signal Action

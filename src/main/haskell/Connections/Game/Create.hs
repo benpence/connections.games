@@ -29,12 +29,12 @@ data BoardConfig
 
 defaultBoardConfig :: BoardConfig
 defaultBoardConfig = BoardConfig
-  { boardHeight = 5
-  , boardWidth  = 5
-  , redWords    = 7
-  , blueWords   = 6
-  , assassins   = 1
-  }
+    { boardHeight = 5
+    , boardWidth  = 5
+    , redWords    = 7
+    , blueWords   = 7
+    , assassins   = 1
+    }
 
 type InvalidConfig = Text
 
@@ -51,21 +51,23 @@ randomBoard (BoardConfig { .. }) dictionary randomGen
   let
     squaresCount       = boardHeight * boardWidth
     markedSquaresCount = redWords + blueWords + assassins
-    (words, gen1)      = Util.chooseN randomGen squaresCount dictionary
+    (gameWords, gen1)  = Util.chooseN randomGen squaresCount dictionary
 
-    markedSquares = 
-        List.replicate redWords Red ++
+    markedSquares      =
+        List.replicate redWords Red   ++
         List.replicate blueWords Blue ++
         List.replicate assassins Assassin
     greySquares        = List.replicate (squaresCount - markedSquaresCount) Grey
     (squares, gen2)    = Util.chooseN gen1 squaresCount (greySquares ++ markedSquares)
 
-    boardArray = Array.listArray ((0, 0), (boardHeight - 1, boardWidth - 1))
+    boardBounds        = ((0, 0), (boardHeight - 1, boardWidth - 1))
+    boardArray         = Array.listArray boardBounds
         [ Square { squareGuessed = False
                  , squareType    = squareType
                  , squareWord    = word
                  }
-        | (index, squareType, word) <- zip3 [0..] squares words
+        -- `squares` and `gameWords` should be the same length
+        | (squareType, word) <- zip squares gameWords
         ]
   in
     Right (Board boardArray, gen2)
