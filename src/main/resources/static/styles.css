@@ -1,23 +1,26 @@
 .square {
-  padding: 15px;
+  font-size: 22px;
   text-align: center;
-  border: 1px solid #999;
+  font-variant: small-caps;
+
+  padding: 35px 30px 35px 30px;
+  border: 5px solid #fff;
 }
 
 .square-blank {
-  background-color: #fff;
-}
-
-.square-blank:hover {
   background-color: #eee;
 }
 
+.square-blank:hover {
+  background-color: #ccc;
+}
+
 .square-red {
-  background-color: #f00;
+  background-color: #faa;
 }
 
 .square-blue {
-  background-color: #00f;
+  background-color: #aaf;
 }
 
 .square-grey {
@@ -25,5 +28,14 @@
 }
 
 .square-assassin {
-  background-color: #333;
+  background-color: #111;
+  color: #fff;
+}
+
+.score-red {
+  color: #f00;
+}
+
+.score-blue {
+  color: #00f;
 }

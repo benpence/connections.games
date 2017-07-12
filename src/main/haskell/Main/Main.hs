@@ -9,6 +9,7 @@ import qualified Connections.Web.Controller      as Controller
 import qualified Connections.Web.Route           as Route
 import qualified Connections.Web.Store           as Store
 import qualified Data.Text                       as Text
+import qualified Paths_connections               as Cabal
 import qualified System.Random                   as Random
 import qualified Web.Scotty                      as Scotty
 
@@ -16,7 +17,10 @@ import Connections.Types
 
 main :: IO ()
 main = do
-    store <- Store.inMemory
+    wordsPath <- Cabal.getDataFileName "data/words.txt"
+    wordList  <- fmap words (readFile wordsPath)
+
+    store     <- Store.inMemory
 
     Scotty.scotty 3000 $ do
         --Scotty.get "/:word" $ do
@@ -33,7 +37,7 @@ main = do
                   , Create.blueWords   = 7
                   , Create.assassins   = 1
                   }
-              , Controller.dictionary = map (Text.pack . show) [1..100]
+              , Controller.dictionary = map Text.pack wordList
               }
     
         Route.apiRoutes appConfig store

@@ -7,6 +7,8 @@ maintainer:          github@benpence.com
 build-type:          Simple
 cabal-version:       >= 1.10
 
+data-dir:            data/
+
 executable connections-main
   hs-source-dirs:             src/main/haskell/Main
   main-is:                    Main.hs
