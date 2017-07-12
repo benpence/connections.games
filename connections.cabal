@@ -7,7 +7,11 @@ maintainer:          github@benpence.com
 build-type:          Simple
 cabal-version:       >= 1.10
 
-data-dir:            data/
+data-files:
+  src/main/resources/words.txt
+  src/main/resources/static/*.css
+  src/main/resources/static/*.js
+  src/main/resources/static/*.html
 
 executable connections-main
   hs-source-dirs:             src/main/haskell/Main
@@ -45,5 +49,3 @@ library
     , text
 
   default-language:           Haskell2010
-
-  -- TODO: Include data file

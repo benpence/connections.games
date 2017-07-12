@@ -18,13 +18,14 @@ import Data.Text (Text)
 import Text.Read (readMaybe)
 
 -- | Add routes for routes the browser might visit directly.
-staticRoutes :: Scotty.ScottyM ()
-staticRoutes = do
+staticRoutes :: Text -> Scotty.ScottyM ()
+staticRoutes staticDirectory = do
     -- | Load the HTML page that will download and execute the thick JS client.
     Scotty.get "/" $ do
         Scotty.file "src/main/resources/static/index.html"
 
-    serveStaticDirectory "/static/" "src/main/resources/static/"
+    -- | Serve static files from a 
+    serveStaticDirectory "/static/" staticDirectory
 
 serveStaticDirectory :: Text -> Text -> Scotty.ScottyM ()
 serveStaticDirectory staticRouteDirectory staticDirectory = do

@@ -14,10 +14,15 @@ import qualified System.Random                   as Random
 import qualified Web.Scotty                      as Scotty
 
 import Connections.Types
+import Data.Monoid ((<>))
+import Data.Text (Text)
+
+resourcesDirectory :: Text
+resourcesDirectory = "src/main/resources/"
 
 main :: IO ()
 main = do
-    wordsPath <- Cabal.getDataFileName "data/words.txt"
+    wordsPath <- Cabal.getDataFileName (Text.unpack (resourcesDirectory <> "words.txt"))
     wordList  <- fmap words (readFile wordsPath)
 
     store     <- Store.inMemory
@@ -27,7 +32,7 @@ main = do
         --    beam <- Scotty.param "word"
         --    Scotty.html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
 
-        Route.staticRoutes
+        Route.staticRoutes (resourcesDirectory <> "static/")
     
         let appConfig = Controller.AppConfig
               { Controller.boardConfig = Create.BoardConfig
