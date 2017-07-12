@@ -27,13 +27,43 @@ data Response a
     = Results { results :: a }
     | Errors { errors :: (Array String) }
 
+instance decodeResponse :: (DecodeJson a) => DecodeJson (Response a) where
+    decodeJson json = do
+        obj <- decodeJson json
+        (decodeResults obj) <|> (decodeErrors obj)
+
+decodeResults :: forall a. (DecodeJson a) => JObject -> Either String (Response a)
+decodeResults obj = do
+    results <- obj .? "results"
+    pure (Results { results: results })
+
+decodeErrors :: forall a. JObject -> Either String (Response a)
+decodeErrors obj = do
+    errors <- obj .? "errors"
+    pure (Errors { errors: errors })
+
+-- | An interface for talking to the backend
 type Client =
-    { endTurn :: forall r. String -> Aff (ajax :: AJAX | r) (Response Unit)
-    , guess   :: forall r. String -> (Tuple Int Int) -> Aff (ajax :: AJAX | r) (Response Unit)
-    , newGame :: forall r. String -> Aff (ajax :: AJAX | r) (Response Unit)
-    , status  :: forall r. String -> Aff (ajax :: AJAX | r) (Response (Maybe Game))
+    -- | Tell the backend to end the current turn
+    { endTurn :: forall r. String                       -- ^ The game key
+              -> Aff (ajax :: AJAX | r) (Response Unit)
+
+    -- | Tell the backend to guess a square
+    , guess   :: forall r. String                       -- ^ The game key
+              -> (Tuple Int Int)                        -- ^ The coordinates for
+                                                        -- the square being guessed
+              -> Aff (ajax :: AJAX | r) (Response Unit)
+
+    -- | Tell the backend to start a new game
+    , newGame :: forall r. String                       -- ^ The game key
+              -> Aff (ajax :: AJAX | r) (Response Unit)
+
+    -- | Get the current state of the game
+    , status  :: forall r. String                       -- ^ The game key
+              -> Aff (ajax :: AJAX | r) (Response (Maybe Game))
     }
 
+-- | Client for very basic testing without a backend. Doesn't update state.
 dummyClient :: Client
 dummyClient =
   let
@@ -50,6 +80,7 @@ dummyClient =
     , status:  (\key -> pure (Results { results: Just game }))
     }
 
+-- | Client for talking to the real backend.
 remoteClient :: Client
 remoteClient =
     { endTurn: remoteEndTurn
@@ -104,22 +135,9 @@ remoteStatus key =
     resp <- Http.request Method.GET url Nothing
     pure (toResponse (resp.response))
 
+-- | Response is basically an Either [String] a, so this lifts decoding errors
+-- into a Response type as an Errors value.
 toResponse :: forall a. DecodeJson a => Json -> Response a
 toResponse json = case decodeJson json of
     Right response    -> response
     Left errorMessage -> Errors { errors: [errorMessage] }
-
-instance decodeResponse :: (DecodeJson a) => DecodeJson (Response a) where
-    decodeJson json = do
-        obj <- decodeJson json
-        (decodeResults obj) <|> (decodeErrors obj)
-
-decodeResults :: forall a. (DecodeJson a) => JObject -> Either String (Response a)
-decodeResults obj = do
-    results <- obj .? "results"
-    pure (Results { results: results })
-
-decodeErrors :: forall a. JObject -> Either String (Response a)
-decodeErrors obj = do
-    errors <- obj .? "errors"
-    pure (Errors { errors: errors })

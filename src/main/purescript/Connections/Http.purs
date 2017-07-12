@@ -5,11 +5,9 @@ module Connections.Http
 
 import Data.List                                 as List
 import Data.URI                                  as URI    
-import Data.URI.Types                            as URI
 import Network.HTTP.Affjax                       as Affjax
 
 import Control.Monad.Aff (Aff)
-import Data.Argonaut.Core (Json)
 import Data.Either (Either(..))
 import Data.HTTP.Method (Method)
 import Data.Maybe (Maybe(..))
@@ -19,7 +17,10 @@ import Network.HTTP.Affjax.Response (class Respondable)
 
 import Prelude
 
-path :: URI.URIPathAbs -> Array (Tuple String String) -> String
+-- | Construct path for URI with query params
+path :: URI.URIPathAbs              -- ^ The absolute path of the URI
+     -> Array (Tuple String String) -- ^ A list of query params as key-value pairs
+     -> String
 path uriPath params =
   let
     paramsArray = map (\(Tuple param val) -> Tuple param (Just val)) (List.fromFoldable params)
@@ -32,7 +33,6 @@ path uriPath params =
   in
     URI.printURI uri
 
--- TODO: Ease constraint on payload to Network.HTTP.Affjax.Request.Requestable?
 request :: forall a r. Respondable a => Method -> String -> Maybe String -> Aff (ajax :: AJAX | r) (Affjax.AffjaxResponse a)
 request method url payload =
     Affjax.affjax (Affjax.defaultRequest { url = url, method = Left method, content = payload })

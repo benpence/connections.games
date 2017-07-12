@@ -42,6 +42,7 @@ instance decodeTurn :: DecodeJson Turn where
             "BlueTurn" -> Right BlueTurn
             _          -> Left "Turn must be one of [\"RedTurn\", \"BlueTurn\"]"
 
+-- | A 2D matrix of squares. A list of horizontal rows of squares.
 newtype Board = Board (Array (Array Square))
 
 instance decodeBoard :: DecodeJson Board where
@@ -49,11 +50,12 @@ instance decodeBoard :: DecodeJson Board where
         obj <- decodeJson json
         pure (jsonToBoard obj)
 
--- | Convert square key-values into nested arrays
+-- | Convert square key-values into nested arrays. This is just an adaptor from
+-- the format that the backend serializes the 2D board as to our frontend format.
 jsonToBoard :: Array (Tuple (Tuple Int Int) Square) -> Board
 jsonToBoard squares =
   let
-    sameRow        = (\a b -> (Tuple.fst (Tuple.fst a)) == (Tuple.fst (Tuple.fst b)))
+    sameRow (Tuple (Tuple a _) _) (Tuple (Tuple b _) _) = a == b
     groupedByRow   = Array.groupBy sameRow squares
 
     projectSquares = map Tuple.snd
