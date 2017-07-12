@@ -8,6 +8,7 @@ module Connections.View
   ) where
 
 import Connections.Api                           as Api
+import Connections.Game                          as Game
 import Data.Array                                as Array
 import Data.Int                                  as Int
 import Data.Maybe                                as Maybe
@@ -25,7 +26,6 @@ import Signal (Signal)
 
 import Connections.Types
 import Prelude
-import Debug.Trace
 
 type State =
     { key         :: String
@@ -70,14 +70,14 @@ update client GetStatus             state =
         case apiResponse of
             (Api.Results { results: maybeGame }) -> pure (GotStatus maybeGame)
             -- TODO: Log and dispaly to user
-            (Api.Errors { errors: errors })      -> pure (trace (show errors) \_ -> SideEffects)
+            (Api.Errors { errors: errors })      -> pure SideEffects
   in
     Pux.onlyEffects state [effect]
 
 update client ToggleSpymaster       state =
     Pux.noEffects (state { isSpymaster = not state.isSpymaster })
 
-update client SideEffects           state = Pux.noEffects state
+update client SideEffects           state = Pux.onlyEffects state [pure GetStatus]
 
 update client (GotStatus maybeGame) state = Pux.noEffects (state { game = maybeGame })
 
@@ -89,34 +89,38 @@ handleMutableCall client state (Api.Errors _)  = SideEffects
 view :: State -> Html Action
 view state =
   let
-    scoreView   = map (viewScore <<< (\(Game game) -> game.board)) state.game
+    scoreView   = map viewScore state.game
     buttonsView = viewButtons state.isSpymaster (Maybe.isJust state.game)
-    boardView   = map (viewBoard <<< (\(Game game) -> game.board)) state.game
+    boardView   = map (viewGame state.isSpymaster) state.game
 
     components  = Array.catMaybes [scoreView, Just buttonsView, boardView]
   in
     H.div [A.className "app container-fluid"] components
 
-viewScore :: Board -> Html Action
-viewScore (Board board) =
+-- TODO: Break this up into more top level functions
+viewScore :: Game -> Html Action
+viewScore game@(Game { turn }) =
   let
-    countSquare squareType (Square square)   = (square.squareType == squareType) && (not square.guessed)
-    countSquares squareType squares          = Array.length (Array.filter (countSquare squareType) squares)
-    countBoard squareType                    = Array.foldl (+) 0 (map (countSquares squareType) board)
+    winner = Game.winner game
 
-    redRemaining                             = countBoard Red
-    blueRemaining                            = countBoard Blue
-    assassins                                = countBoard Assassin
+    status :: Maybe Turn -> Turn -> String
+    status (Just BlueTurn) _        = "Blue wins!"
+    status (Just RedTurn)  _        = "Red wins!"
+    status _               RedTurn  = "Red turn"
+    status _               BlueTurn = "Blue turn"
   in
     H.div [A.className "score"] [
+        H.div [A.className "score-status"] [
+            H.text (status winner turn)
+        ],
         H.div [A.className "score-red"] [
-            H.text ("Red Remaining: " <> show redRemaining)
+            H.text ("Red Remaining: " <> show (Game.redRemaining game))
         ],
         H.div [A.className "score-blue"] [
-            H.text ("Blue Remaining: " <> show blueRemaining)
+            H.text ("Blue Remaining: " <> show (Game.blueRemaining game))
         ],
         H.div [A.className "score-assassin"] [
-            H.text ("Assassins: " <> show assassins)
+            H.text ("Assassins: " <> show (Game.assassins game))
         ]
     ]
 
@@ -128,15 +132,14 @@ viewButtons isSpymaster gameStarted =
         then [H.button [E.onClick (const EndTurn)] [H.text "End Turn"]]
         else []
 
-    teamClass             = if isSpymaster then "active" else "disabled"
-    spymasterClass        = if isSpymaster then "disabled" else "active"
+    toggleText =
+        if isSpymaster
+        then "Change to Player"
+        else "Change to Spymaster"
     toggleSpymasterButton =
         H.div [] [
-            H.button [E.onClick (const ToggleSpymaster), A.className teamClass] [
-                 H.text "Player"
-            ],
-            H.button [E.onClick (const ToggleSpymaster), A.className spymasterClass] [
-                 H.text "Spymaster"
+            H.button [E.onClick (const ToggleSpymaster)] [
+                 H.text toggleText
             ]
         ]
   in
@@ -146,30 +149,43 @@ viewButtons isSpymaster gameStarted =
         toggleSpymasterButton
     ])
 
--- TODO: Plumb isSpymaster through to change visibility of guessed
-viewBoard :: Board -> Html Action
-viewBoard (Board board) =
+viewGame :: Boolean -> Game -> Html Action
+viewGame isSpymaster game@(Game { board: (Board board) }) =
   let
-    squareRowViews = Array.mapWithIndex viewSquareRow board
+    isGameOver       = Maybe.isJust (Game.winner game)
+    squareRowViews = Array.mapWithIndex (viewSquareRow isSpymaster isGameOver) board
   in
     H.div [A.className "board"] squareRowViews
 
-viewSquareRow :: Int -> Array Square -> Html Action
-viewSquareRow rowNum squares =
+viewSquareRow :: Boolean -> Boolean -> Int -> Array Square -> Html Action
+viewSquareRow isSpymaster isGameOver rowNum squares =
   let
-    squareViews = Array.mapWithIndex (viewSquare rowNum) squares
+    squareViews = Array.mapWithIndex (viewSquare isSpymaster isGameOver rowNum) squares
   in
     H.div [A.className "square-row row"] squareViews
 
-viewSquare :: Int -> Int -> Square -> Html Action
-viewSquare rowNum colNum (Square square) =
+viewSquare :: Boolean -> Boolean -> Int -> Int -> Square -> Html Action
+viewSquare isSpymaster isGameOver rowNum colNum (Square square) =
   let
-    guess = Guess (Tuple rowNum colNum)
+    guess   = Guess (Tuple rowNum colNum)
+
+    onClick =
+        -- Spymaster cannot click squares
+        if isGameOver || square.guessed || isSpymaster
+        then []
+        else [E.onClick (const guess)]
+
+    colorClassName :: SquareType -> String
+    colorClassName _ | not isSpymaster && not square.guessed = "square-blank"
+    colorClassName Red                                       = "square-red"
+    colorClassName Blue                                      = "square-blue"
+    colorClassName Grey                                      = "square-grey"
+    colorClassName Assassin                                  = "square-assassin"
+
+    className = "col-xs-1 square " <> colorClassName square.squareType
   in
-    H.div [A.className "square col-xs-1"] [
-        H.span [E.onClick (const guess)] [
-             H.text square.word
-        ]
+    H.div ([A.className className] <> onClick) [
+        H.text square.word
     ]
 
 refreshEvery :: Int -> Signal Action

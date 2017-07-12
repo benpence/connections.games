@@ -6,8 +6,12 @@ module Connections.Types
   , Turn(..)
   ) where
 
+import Data.Array                                as Array
+import Data.Tuple                                as Tuple
+
 import Data.Argonaut.Decode (class DecodeJson, (.?), decodeJson)
 import Data.Either (Either(..))
+import Data.Tuple (Tuple(..))
 
 import Prelude
 
@@ -25,6 +29,11 @@ instance decodeGame :: DecodeJson Game where
 
 data Turn = RedTurn | BlueTurn
 
+instance eqTurn :: Eq Turn where
+    eq RedTurn  RedTurn  = true
+    eq BlueTurn BlueTurn = true
+    eq _ _               = false
+
 instance decodeTurn :: DecodeJson Turn where
     decodeJson json = do
         str <- decodeJson json
@@ -38,7 +47,20 @@ newtype Board = Board (Array (Array Square))
 instance decodeBoard :: DecodeJson Board where
     decodeJson json = do
         obj <- decodeJson json
-        pure (Board obj)
+        pure (jsonToBoard obj)
+
+-- | Convert square key-values into nested arrays
+jsonToBoard :: Array (Tuple (Tuple Int Int) Square) -> Board
+jsonToBoard squares =
+  let
+    sameRow        = (\a b -> (Tuple.fst (Tuple.fst a)) == (Tuple.fst (Tuple.fst b)))
+    groupedByRow   = Array.groupBy sameRow squares
+
+    projectSquares = map Tuple.snd
+
+    rowsOfSquares  = map (Array.fromFoldable <<< projectSquares) groupedByRow
+  in
+    Board rowsOfSquares
 
 newtype Square = Square
     { guessed    :: Boolean
@@ -69,7 +91,6 @@ instance decodeSquareType :: DecodeJson SquareType where
             "Grey"     -> Right Grey
             "Assassin" -> Right Assassin
             _          -> Left "SquareType must be one of [\"Red\", \"Blue\", \"Grey\", \"Assassin\"]"
-            
 
 instance eqSquareType :: Eq SquareType where
     eq Red      Red      = true

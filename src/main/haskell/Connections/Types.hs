@@ -22,7 +22,7 @@ instance Aeson.ToJSON Game
 data Turn
     = RedTurn
     | BlueTurn
-    deriving (Eq, Enum, Show, Ord, Generic)
+    deriving (Eq, Enum, Bounded, Show, Ord, Generic)
 
 instance Aeson.ToJSON Turn
 

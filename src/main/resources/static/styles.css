@@ -1,9 +1,29 @@
 .square {
   padding: 15px;
   text-align: center;
+  border: 1px solid #999;
+}
+
+.square-blank {
+  background-color: #fff;
+}
+
+.square-blank:hover {
   background-color: #eee;
 }
 
-.square:hover {
-  background-color: #bbb;
+.square-red {
+  background-color: #f00;
+}
+
+.square-blue {
+  background-color: #00f;
+}
+
+.square-grey {
+  background-color: #ccc;
+}
+
+.square-assassin {
+  background-color: #333;
 }

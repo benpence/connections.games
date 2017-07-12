@@ -44,8 +44,11 @@ makeMove game@(Game {..}) guess@(Guess (i, j))
     -- Transform game
     correctGuess                 = ((squareType == Red)  && (gameTurn == RedTurn)) ||
                                    ((squareType == Blue) && (gameTurn == BlueTurn))
-    updatedTurn                  = if correctGuess then gameTurn else succ gameTurn
+    updatedTurn                  = if correctGuess then gameTurn else next gameTurn
 
     updatedSquare                = square { squareGuessed = True }
     updatedBoard                 = boardMatrix // [((i, j), updatedSquare)]
-makeMove game EndTurn = Right (game { gameTurn = succ (gameTurn game) })
+makeMove game EndTurn = Right (game { gameTurn = next (gameTurn game) })
+
+next :: (Bounded a, Enum a, Eq a) => a -> a
+next b = if (maxBound == b) then minBound else succ b
