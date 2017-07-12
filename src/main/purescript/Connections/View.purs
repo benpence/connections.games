@@ -116,17 +116,18 @@ viewScore game@(Game { turn }) =
     status _               BlueTurn = "Blue turn"
   in
     H.div [A.className "score"] [
+        -- Display the score in form 'Red - Blue - Assassins'
+        H.div [A.className "score-numbers"] [
+            H.span [A.className "score-red" ]     [H.text (show (Game.redRemaining game))],
+            H.text " - ",
+            H.span [A.className "score-blue"]     [H.text (show (Game.blueRemaining game))],
+            H.text " - ",
+            H.span [A.className "score-assassin"] [H.text (show (Game.assassins game))]
+        ],
+
+        -- Status message
         H.div [A.className "score-status"] [
-            H.text (status winner turn)
-        ],
-        H.div [A.className "score-red"] [
-            H.text ("Red Remaining: " <> show (Game.redRemaining game))
-        ],
-        H.div [A.className "score-blue"] [
-            H.text ("Blue Remaining: " <> show (Game.blueRemaining game))
-        ],
-        H.div [A.className "score-assassin"] [
-            H.text ("Assassins: " <> show (Game.assassins game))
+            H.text (status (Game.winner game) turn)
         ]
     ]
 
