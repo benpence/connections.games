@@ -7,12 +7,13 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "purescript": "^0.10.5",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
-    "virtual-dom": "^2.1.1"
   },
   "devDependencies": {
-    "bower": "^1.7.9"
+    "bower": "^1.7.9",
+    "pulp": "^9.1.0",
+    "purescript": "^0.10.5",
+    "purs": "0.0.2",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2"
   }
 }
