@@ -44,11 +44,13 @@ serveStaticDirectory staticRouteDirectory staticDirectory = do
 --   On failure: { errors: ["..."] }
 apiRoutes :: Controller.AppConfig -> Store IO -> Scotty.ScottyM ()
 apiRoutes appConfig store = do
-    let key = Store.Key ""
+    let keyParam = fmap Store.Key (Scotty.param "key")
 
     -- | Ends the turn for the current team. Mutations will be visible in
     -- "/api/status". Returns `null` as a result.
     Scotty.get "/api/end_turn" $ do
+        key <- keyParam
+
         let action = Controller.Move Play.EndTurn
         let controllerResponse = Controller.onAction appConfig store key action
         apiResponse <- liftIO controllerResponse
@@ -58,8 +60,9 @@ apiRoutes appConfig store = do
     -- 0-indexed square (i, j). Mutations will be visible in "/api/status".
     -- Returns `null` as a result.
     Scotty.get "/api/guess" $ do
-        i <- Scotty.param "i"
-        j <- Scotty.param "j"
+        key <- keyParam
+        i   <- Scotty.param "i"
+        j   <- Scotty.param "j"
 
         let action = Controller.Move (Play.Guess (i, j))
         let controllerResponse = Controller.onAction appConfig store key action
@@ -70,6 +73,8 @@ apiRoutes appConfig store = do
      -- | Generates a new game. Mutations will be visible in "/api/status".
     -- Returns `null` as a result.
     Scotty.get "/api/new_game" $ do
+        key <- keyParam
+
         let controllerResponse = Controller.onAction appConfig store key Controller.NewGame
         apiResponse <- liftIO controllerResponse
         Scotty.json apiResponse
@@ -77,6 +82,8 @@ apiRoutes appConfig store = do
     -- | Reads the state of the game, if there is one; otherwise, return `null`
     -- as the result.
     Scotty.get "/api/status" $ do
+        key <- keyParam
+
         let controllerResponse = Controller.onAction appConfig store key Controller.Status
         apiResponse <- liftIO controllerResponse
         Scotty.json apiResponse
