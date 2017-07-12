@@ -6,8 +6,6 @@ module Connections.Game
   ) where
 
 import Data.Array                                as Array
-import Data.Either                               as Either
-import Data.Maybe                                as Maybe
 
 import Data.Maybe (Maybe(..))
 
