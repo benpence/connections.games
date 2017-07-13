@@ -1,0 +1,18 @@
+{
+  "name": "blog.benpence.com",
+  "version": "0.0.1-SNAPSHOT",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "purescript": "^0.11.5",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "virtual-dom": "^2.1.1"
+  },
+  "devDependencies": {
+    "bower": "^1.8.0"
+  }
+}

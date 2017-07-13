@@ -1,0 +1,9 @@
+.square {
+  padding: 15px;
+  text-align: center;
+  background-color: #eee;
+}
+
+.square:hover {
+  background-color: #bbb;
+}

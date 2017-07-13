@@ -1,0 +1,40 @@
+{
+  "name": "blog.benpence.com",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Ben Pence <github@benpence.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/benpence/blog.benpence.com",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "dependencies": {
+    "purescript-assert": "^3.0.0",
+    "purescript-console": "^3.0.0",
+    "purescript-eff": "^3.1.0",
+    "purescript-lists": "^4.9.0",
+    "purescript-lens": "^3.0.0",
+    "purescript-tuples": "^4.1.0",
+    "purescript-foldable-traversable": "^3.4.0",
+    "purescript-either": "^3.1.0",
+    "purescript-pux": "^10.0.0",
+    "purescript-datetime": "^3.3.0",
+    "purescript-enums": "^3.2.0",
+    "purescript-markdown": "^11.0.0",
+    "purescript-affjax": "^4.0.0",
+    "purescript-uri": "^3.0.1",
+    "purescript-pathy": "^4.0.0",
+    "purescript-argonaut-core": "^3.1.0",
+    "purescript-argonaut-codecs": "^3.2.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^3.0.0",
+    "purescript-test-unit": "^11.0.0"
+  }
+}
