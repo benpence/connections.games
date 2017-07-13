@@ -1,12 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Connections.Web.Route where
+module Connections.Web.Route
+  ( apiRoutes
+  , staticRoutes
+  ) where
 
 import qualified Connections.Game.Play           as Play
 import qualified Connections.Web.Controller      as Controller
 import qualified Connections.Web.Store           as Store
 import qualified Data.Aeson.Types                as Aeson
 import qualified Data.Text                       as Text
+import qualified Paths_connections               as Cabal
 import qualified System.IO                       as IO
 import qualified Web.Scotty                      as Scotty
 
@@ -24,7 +28,7 @@ staticRoutes staticDirectory = do
     Scotty.get "/" $ do
         Scotty.file "src/main/resources/static/index.html"
 
-    -- | Serve static files from a 
+    -- | Serve static files from a directory
     serveStaticDirectory "/static/" staticDirectory
 
 serveStaticDirectory :: Text -> Text -> Scotty.ScottyM ()
@@ -32,11 +36,13 @@ serveStaticDirectory staticRouteDirectory staticDirectory = do
     let routePath = Text.unpack ("^" <> staticRouteDirectory <> "(.*)$")
 
     Scotty.get (Scotty.regex routePath) $ do
-        filePath <- Scotty.param "1"
+        path <- Scotty.param "1"
+        let relativePath = staticDirectory <> path
+        absolutePath <- liftIO (Cabal.getDataFileName (Text.unpack relativePath))
 
         -- TODO: Is this vulnerable to directory traversal attacks? Doesn't seem
         -- like it from testing, but I should look into this more
-        Scotty.file ((Text.unpack staticDirectory) <> filePath)
+        Scotty.file absolutePath
 
 -- | Add routes for all the API calls
 --

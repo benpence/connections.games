@@ -1,3 +1,13 @@
+.title {
+  font-size: 40px;
+  font-variant: small-caps;
+  text-align: center;
+}
+
+.board {
+
+}
+
 .square {
   font-size: 22px;
   text-align: center;

@@ -16,7 +16,6 @@ main = do
         { initialState: View.init
         , update: View.update Api.remoteClient
         , view: View.view
-        -- TODO: Add status check signal
         , inputs: [View.refreshEvery 2000] }
 
     Pux.renderToDOM "body" app.html

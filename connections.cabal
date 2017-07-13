@@ -37,6 +37,7 @@ library
     Connections.Web.Store
     Connections.Types
     Connections.Util
+    Paths_connections
 
   build-depends:
       base
