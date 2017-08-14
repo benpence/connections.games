@@ -12,10 +12,12 @@ import Prelude
 
 main :: forall r. Eff ("ajax" :: AJAX, "channel" :: CHANNEL, "err" :: EXCEPTION | r) Unit
 main = do
+    routeChanges <- Route.changes
+
     app <- Pux.start
         { initialState: View.init
         , update: View.update Api.remoteClient
         , view: View.view
-        , inputs: [View.refreshEvery 2000] }
+        , inputs: View.inputs routeChanges }
 
     Pux.renderToDOM "body" app.html
