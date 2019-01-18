@@ -1,6 +1,6 @@
 # About
 
-An online version of the [Codenames game](https://en.wikipedia.org/wiki/Codenames_(board_game\)). Largely based on the experience playing https://www.horsepaste.com/.
+An online version of the <a href="https://en.wikipedia.org/wiki/Codenames_(board_game)">Codenames game</a>. Largely based on the experience playing https://www.horsepaste.com/.
 
 # Install 
 
