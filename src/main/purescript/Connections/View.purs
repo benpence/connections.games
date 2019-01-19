@@ -103,10 +103,11 @@ view :: State -> Html Event
 view { game, isSpymaster } =
   let
     gameStarted = Maybe.isJust game
+    noWinner    = Maybe.isNothing (game >>= Game.winner)
 
     scoreView   = map viewScore game
     boardView   = map (viewGame isSpymaster) game
-    buttonsView = viewButtons isSpymaster gameStarted
+    buttonsView = viewButtons isSpymaster gameStarted noWinner
     title       = H.div [A.className "title"] [H.text "Connections"]
 
     components  = Array.catMaybes [Just title, scoreView, boardView, Just buttonsView]
@@ -137,12 +138,12 @@ viewScore game@(Game { turn }) =
         ]
     ]
 
-viewButtons :: Boolean -> Boolean -> Html Event
-viewButtons isSpymaster gameStarted =
+viewButtons :: Boolean -> Boolean -> Boolean -> Html Event
+viewButtons isSpymaster gameStarted noWinner =
   let
     -- Some buttons are only present during the game
     endTurnButton =
-        if gameStarted
+        if gameStarted && noWinner
         then [H.button [A.className "btn", E.onClick (const EndTurn)] [H.text "End Turn"]]
         else []
 
