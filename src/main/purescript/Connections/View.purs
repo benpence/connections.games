@@ -48,8 +48,8 @@ data Event
     | GotStatus (Maybe Game) -- ^ Fetched most recent game status. We should store it.
 
 -- | Initial state of the UI.
-init :: State
-init = { key: "", isSpymaster: false, game: Nothing }
+init :: String -> State
+init key = { key: key, isSpymaster: false, game: Nothing }
 
 -- | Handle events that can mutate the state, either locally or by talking to the
 -- server. Pux.EffModel essentially encapsulates the new state and optional IO

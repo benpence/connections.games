@@ -10,8 +10,10 @@ import qualified Connections.Web.Controller      as Controller
 import qualified Connections.Web.Store           as Store
 import qualified Data.Aeson.Types                as Aeson
 import qualified Data.Text                       as Text
+import qualified Data.Text.Lazy                  as LazyText
 import qualified Paths_connections               as Cabal
 import qualified System.IO                       as IO
+import qualified System.Random                   as Random
 import qualified Web.Scotty                      as Scotty
 
 import Connections.Web.Store (Store)
@@ -25,8 +27,16 @@ import Text.Read (readMaybe)
 staticRoutes :: Text -> Scotty.ScottyM ()
 staticRoutes staticDirectory = do
     -- | Load the HTML page that will download and execute the thick JS client.
-    Scotty.get "/" $ do
+    Scotty.get (Scotty.regex "^/([0-9]{1,16})$") $ do
         Scotty.file "src/main/resources/static/index.html"
+
+    -- | Redirect to random seed
+    Scotty.get "/" $ do
+        -- TODO: Replace with secure hash of current time in milliseconds
+        g <- liftIO Random.newStdGen
+        let (randomNumber, _) = Random.randomR (1, 9999999999999999 :: Integer) g
+
+        Scotty.redirect ("/" <> LazyText.pack (show randomNumber))
 
     -- | Serve static files from a directory
     serveStaticDirectory "/static/" staticDirectory
@@ -40,8 +50,6 @@ serveStaticDirectory staticRouteDirectory staticDirectory = do
         let relativePath = staticDirectory <> path
         absolutePath <- liftIO (Cabal.getDataFileName (Text.unpack relativePath))
 
-        -- TODO: Is this vulnerable to directory traversal attacks? Doesn't seem
-        -- like it from testing, but I should look into this more
         Scotty.file absolutePath
 
 -- | Add routes for all the API calls
